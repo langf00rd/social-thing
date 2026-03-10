@@ -1,26 +1,15 @@
 "use client";
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { createClient } from "@/lib/supabase";
+import { Post, Reply } from "@/lib/types";
 import { ArrowRight } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Balancer from "react-wrap-balancer";
-
-type Post = {
-  id: number;
-  body: string;
-  theme: string;
-  created_at: string;
-};
-
-type Reply = {
-  id: number;
-  body: string;
-  created_at: string;
-};
 
 export default function Page() {
   const params = useParams();
@@ -35,7 +24,16 @@ export default function Page() {
       const supabase = createClient();
       const { data: postData } = await supabase
         .from("posts")
-        .select("*")
+        .select(
+          `
+          *,
+          user:users (
+            first_name,
+            last_name,
+            photo_url
+          )
+        `,
+        )
         .eq("id", params.id)
         .single();
 
@@ -75,6 +73,8 @@ export default function Page() {
         .order("created_at", { ascending: false });
       if (data) setReplies(data);
       setReplyText("");
+    } else {
+      alert("Error sending");
     }
 
     setSending(false);
@@ -97,16 +97,39 @@ export default function Page() {
   }
 
   return (
-    <div className="overflow-y-scroll h-full">
-      <div className="max-w-lg mx-auto py-20">
-        <h2 className="text-[1.5rem] md:text-3xl max-w-100">
+    <div className="overflow-y-scroll bg-white space-y-8 fixed top-0 left-0 right-0 bottom-0 h-full">
+      <div
+        className="max-w-lg mx-auto p-4"
+        style={{
+          backgroundColor: post.theme + 10,
+          color: post.theme,
+        }}
+      >
+        <div className="flex items-center gap-2 pt-12 pb-4">
+          {post.user?.photo_url && (
+            <Avatar>
+              <AvatarImage src={post.user.photo_url || ""} />
+              <AvatarFallback>
+                {post.user?.first_name?.[0] || "U"}
+                {post.user?.last_name?.[0] || ""}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          <span className="text-sm font-medium text-neutral-600">
+            From {post.user?.first_name}
+          </span>
+        </div>
+        <h2 className="text-xl max-w-100">
           <Balancer>{post.body}</Balancer>
         </h2>
       </div>
 
-      <div className="max-w-lg mx-auto pb-32 space-y-4">
+      <div className="max-w-lg mx-auto pb-32 space-y-4 md:px-0 px-5">
+        <h3 className="font-medium text-lg">Replies ({replies.length})</h3>
         {replies.length === 0 ? (
-          <p className="text-center text-neutral-400">No replies yet</p>
+          <p className="text-center text-neutral-400 text-sm">
+            Be the first to reply
+          </p>
         ) : (
           replies.map((reply) => (
             <div
@@ -115,7 +138,14 @@ export default function Page() {
             >
               <p className="text-neutral-700">{reply.body}</p>
               <p className="text-xs text-neutral-400 mt-2">
-                {new Date(reply.created_at).toLocaleDateString()}
+                {new Date(reply.created_at).toLocaleString("en-US", {
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                })}
               </p>
             </div>
           ))
@@ -123,7 +153,7 @@ export default function Page() {
       </div>
 
       <div className="fixed w-screen bottom-0 left-0 flex items-center justify-center">
-        <div className="w-full bg-white h-full max-w-225">
+        <div className="w-full bg-white h-full max-w-lg">
           <div className="flex p-5 gap-2">
             <Input
               className="bg-neutral-200/60 rounded-full border-none"

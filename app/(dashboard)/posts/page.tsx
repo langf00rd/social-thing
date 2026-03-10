@@ -24,6 +24,7 @@ type Post = {
   body: string;
   theme: string;
   created_at: string;
+  reply_count?: number;
 };
 
 export default function Page() {
@@ -44,7 +45,16 @@ export default function Page() {
         .order("created_at", { ascending: false });
 
       if (!error && data) {
-        setPosts(data);
+        const postsWithCounts = await Promise.all(
+          data.map(async (post) => {
+            const { count } = await supabase
+              .from("replies")
+              .select("*", { count: "exact", head: true })
+              .eq("post", post.id);
+            return { ...post, reply_count: count || 0 };
+          }),
+        );
+        setPosts(postsWithCounts);
       }
       setLoading(false);
     };
@@ -103,13 +113,26 @@ export default function Page() {
           </Link>
         </div>
       ) : (
-        <div className="grid gap-2 md:gap-4 md:grid-cols-3">
+        <div className="grid gap-2 md:gap-4 md:grid-cols-2">
           {posts.map((post) => (
             <Link key={post.id} href={`/posts/${post.id}`}>
               <div className="flex-col gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl">
                 <p className="text-neutral-600">{post.body}</p>
-                <div className="text-neutral-400 font-mono text-sm">
-                  <p>{new Date(post.created_at).toLocaleDateString()}</p>
+                <div className="text-neutral-400 font-mono text-sm flex justify-between">
+                  <p>
+                    {new Date(post.created_at).toLocaleString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                      hour12: true,
+                    })}
+                  </p>
+                  <p>
+                    {post.reply_count}{" "}
+                    {post.reply_count === 1 ? "reply" : "replies"}
+                  </p>
                 </div>
               </div>
             </Link>

@@ -3,8 +3,8 @@
 import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase";
 import Image from "next/image";
-import Balancer from "react-wrap-balancer";
 import { useState } from "react";
+import Balancer from "react-wrap-balancer";
 
 export default function Page() {
   const [loading, setLoading] = useState(false);
@@ -27,7 +27,7 @@ export default function Page() {
   return (
     <div className="h-full flex items-center justify-center">
       <div className="flex items-center flex-col gap-8">
-        <h2 className="text-5xl font-medium max-w-100 leading-13 text-center">
+        <h2 className="text-3xl md:text-5xl font-medium max-w-100 md:leading-13 text-center">
           <Balancer>Create your free account</Balancer>
         </h2>
         <Button
