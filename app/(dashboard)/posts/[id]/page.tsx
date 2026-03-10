@@ -7,13 +7,15 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRequireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase";
 import { Post, Reply } from "@/lib/types";
-import { Copy, Trash2 } from "lucide-react";
+import { toPng } from "html-to-image";
+import { Copy, Download, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
   useRequireAuth();
 
+  const cardRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
@@ -76,6 +78,15 @@ export default function Page() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    const dataUrl = await toPng(cardRef.current, { pixelRatio: 6 });
+    const link = document.createElement("a");
+    link.download = "card.png";
+    link.href = dataUrl;
+    link.click();
+  };
+
   if (loading)
     return <Header title="Post" showBackButton slotRight={<Spinner />} />;
 
@@ -98,12 +109,16 @@ export default function Page() {
         }
       />
       <div className="my-10 flex justify-center">
-        <PublicPostView post={post} />
+        <PublicPostView post={post} ref={cardRef} />
       </div>
       <div className="flex flex-wrap items-center gap-4 justify-center w-full mb-8">
         <Button variant="outline" onClick={handleCopyLink}>
           <Copy className="opacity-50" />
           {copied ? "Copied!" : "Copy link"}
+        </Button>
+        <Button variant="outline" onClick={handleDownload}>
+          <Download className="opacity-50" />
+          Download
         </Button>
       </div>
 
