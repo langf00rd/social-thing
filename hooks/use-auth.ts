@@ -30,17 +30,9 @@ function setStoredUser(user: User | null) {
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(() => getStoredUser());
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  useEffect(() => {
-    const stored = getStoredUser();
-    if (stored) {
-      setUser(stored);
-    }
-    setLoading(false);
-  }, []);
 
   const fetchUser = async () => {
     const supabase = createClient();
