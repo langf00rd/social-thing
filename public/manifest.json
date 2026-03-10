@@ -1,7 +1,7 @@
 {
-  "name": "Q&A App",
-  "short_name": "Q&A",
-  "description": "A Q&A application",
+  "name": "social thing",
+  "short_name": "social thing",
+  "description": "Ask questions, chat, make friends",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
