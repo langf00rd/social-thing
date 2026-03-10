@@ -1,4 +1,7 @@
+import { Post } from "@/lib/types";
 import { CheckIcon } from "lucide-react";
+import { forwardRef } from "react";
+import Balancer from "react-wrap-balancer";
 
 export function PostView(props: {
   body: string;
@@ -64,3 +67,26 @@ export function PostView(props: {
     </div>
   );
 }
+
+export const PublicPostView = forwardRef<
+  HTMLDivElement,
+  { post: Post; className?: string }
+>(({ post, className }, ref) => {
+  return (
+    <div
+      ref={ref}
+      style={{ backgroundColor: post.theme }}
+      className={`p-10 max-w-150 min-h-100 w-full md:p-18 shadow-[0px_0px_512px_#bcbcbc5c] ${className}`}
+    >
+      <div className="shadow-[0_0_20px_0px_#33333363] h-full rounded-2xl overflow-clip">
+        <div className="w-full h-full bg-white flex items-center justify-center">
+          <p className="font-medium px-8 text-center w-full p-4 text-xl md:text-3xl leading-normal">
+            <Balancer>{post.body}</Balancer>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+PublicPostView.displayName = "PublicPostView";

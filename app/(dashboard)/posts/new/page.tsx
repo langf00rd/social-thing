@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/auth";
 import { TEMPLATE_QUESTIONS } from "@/lib/content";
 import { createClient } from "@/lib/supabase";
+import { Post } from "@/lib/types";
 import { toPng } from "html-to-image";
 import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -46,13 +47,16 @@ export default function Page() {
     const supabase = createClient();
     const slug = generateSlug(body);
 
-    const { error } = await supabase.from("posts").insert({
-      user: user.id,
-      body,
-      theme,
-      subject: body.split(" ")[0] || null,
-      slug,
-    });
+    const { error, data } = await supabase
+      .from("posts")
+      .insert({
+        user: user.id,
+        body,
+        theme,
+        subject: body.split(" ")[0] || null,
+        slug,
+      })
+      .select();
 
     if (error) {
       console.error("Error publishing post:", error);
@@ -60,7 +64,9 @@ export default function Page() {
       return;
     }
 
-    router.push("/posts");
+    const result = data?.[0] as unknown as Post;
+
+    router.push(`/posts/${result.id}`);
   };
 
   return (

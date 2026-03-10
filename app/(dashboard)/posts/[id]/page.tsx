@@ -1,28 +1,27 @@
 "use client";
 
 import Header from "@/components/header";
+import { PublicPostView } from "@/components/post-view";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useRequireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase";
-import { Trash2 } from "lucide-react";
+import { Post } from "@/lib/types";
+import { toPng } from "html-to-image";
+import { Copy, Share2, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-
-type Post = {
-  id: number;
-  body: string;
-  theme: string;
-  created_at: string;
-};
+import { useEffect, useRef, useState } from "react";
 
 export default function Page() {
   useRequireAuth();
+
   const params = useParams();
   const router = useRouter();
+  const cardRef = useRef<HTMLDivElement>(null);
   const [post, setPost] = useState<Post | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -32,16 +31,11 @@ export default function Page() {
         .select("*")
         .eq("id", params.id)
         .single();
-
-      if (!error && data) {
-        setPost(data);
-      }
+      if (!error && data) setPost(data);
       setLoading(false);
     };
 
-    if (params.id) {
-      fetchPost();
-    }
+    if (params.id) fetchPost();
   }, [params.id]);
 
   const handleDelete = async () => {
@@ -51,13 +45,29 @@ export default function Page() {
 
     const supabase = createClient();
     const { error } = await supabase.from("posts").delete().eq("id", post.id);
-
     if (!error) router.push("/posts");
 
     setDeleting(false);
   };
 
-  if (loading) return <Header showBackButton slotRight={<Spinner />} />;
+  const handleCopyLink = async () => {
+    const url = `${window.location.origin}/p/${post?.id}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return;
+    const dataUrl = await toPng(cardRef.current, { pixelRatio: 6 });
+    const link = document.createElement("a");
+    link.download = "card.png";
+    link.href = dataUrl;
+    link.click();
+  };
+
+  if (loading)
+    return <Header title="Post" showBackButton slotRight={<Spinner />} />;
 
   if (!post) return <Header title="Post not found" showBackButton />;
 
@@ -77,19 +87,22 @@ export default function Page() {
           </Button>
         }
       />
-      <div className="mt-8 flex justify-center">
-        <div
-          style={{ backgroundColor: post.theme }}
-          className="p-10 max-w-150 h-100 w-full md:p-18 shadow-[0px_0px_512px_#bcbcbc5c]"
-        >
-          <div className="shadow-[0_0_20px_0px_#33333363] h-full rounded-2xl overflow-clip">
-            <div className="w-full h-full bg-white flex items-center justify-center">
-              <p className="h-[50%] font-medium px-8 text-center w-full p-4 md:text-3xl leading-normal">
-                {post.body}
-              </p>
-            </div>
-          </div>
-        </div>
+      <div className="my-10 flex justify-center">
+        <PublicPostView post={post} ref={cardRef} />
+      </div>
+      <div className="flex items-center gap-4 justify-center w-full">
+        <Button variant="outline">
+          <Share2 className="opacity-50" />
+          Share
+        </Button>
+        <Button variant="outline" onClick={handleCopyLink}>
+          <Copy className="opacity-50" />
+          {copied ? "Copied!" : "Copy link"}
+        </Button>
+        <Button variant="outline" onClick={handleDownload}>
+          <Share2 className="opacity-50" />
+          Download image
+        </Button>
       </div>
     </>
   );
