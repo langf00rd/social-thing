@@ -1,8 +1,15 @@
-import type { NextConfig } from "next";
 import withPWA from "@ducanh2912/next-pwa";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {},
+  images: {
+    remotePatterns: [
+      {
+        hostname: "img.icons8.com",
+      },
+    ],
+  },
 };
 
 const withPWAConfig = withPWA({
