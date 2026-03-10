@@ -7,8 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useRequireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase";
 import { Post, Reply } from "@/lib/types";
-import { toPng } from "html-to-image";
-import { Copy, Share2, Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -77,15 +76,6 @@ export default function Page() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleDownload = async () => {
-    if (!cardRef.current) return;
-    const dataUrl = await toPng(cardRef.current, { pixelRatio: 6 });
-    const link = document.createElement("a");
-    link.download = "card.png";
-    link.href = dataUrl;
-    link.click();
-  };
-
   if (loading)
     return <Header title="Post" showBackButton slotRight={<Spinner />} />;
 
@@ -114,10 +104,6 @@ export default function Page() {
         <Button variant="outline" onClick={handleCopyLink}>
           <Copy className="opacity-50" />
           {copied ? "Copied!" : "Copy link"}
-        </Button>
-        <Button variant="outline" onClick={handleDownload}>
-          <Share2 className="opacity-50" />
-          Download image
         </Button>
       </div>
 
