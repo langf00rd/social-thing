@@ -11,6 +11,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase";
@@ -91,28 +92,29 @@ export default function Page() {
         }
       />
       {loading ? (
-        <p className="text-center text-neutral-500 py-8">Loading...</p>
+        <Spinner className="mx-auto" />
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-neutral-500 mb-4">You haven't created any posts yet.</p>
+          <p className="text-neutral-500 mb-4">
+            You haven&apos;t created any posts yet.
+          </p>
           <Link href="/posts/new">
             <Button>Create your first post</Button>
           </Link>
         </div>
       ) : (
-        <ul className="grid gap-2 md:gap-4 md:grid-cols-3">
+        <div className="grid gap-2 md:gap-4 md:grid-cols-3">
           {posts.map((post) => (
-            <div
-              key={post.id}
-              className="flex-col gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl"
-            >
-              <p className="text-neutral-600">{post.body}</p>
-              <div className="text-neutral-400 font-mono text-sm">
-                <p>{new Date(post.created_at).toLocaleDateString()}</p>
+            <Link key={post.id} href={`/posts/${post.id}`}>
+              <div className="flex-col gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl">
+                <p className="text-neutral-600">{post.body}</p>
+                <div className="text-neutral-400 font-mono text-sm">
+                  <p>{new Date(post.created_at).toLocaleDateString()}</p>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

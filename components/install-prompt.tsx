@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Download } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -56,11 +58,14 @@ export function InstallPrompt() {
   if (isInstalled || !showButton) return null;
 
   return (
-    <button
-      onClick={handleInstall}
-      className="fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-lg shadow-lg hover:bg-gray-800 transition-colors"
-    >
-      Install App
-    </button>
+    <div className="w-screen fixed bottom-0 left-0 flex items-center justify-center py-4">
+      <Button
+        onClick={handleInstall}
+        size="lg"
+        className="shadow-xl animate-bounce"
+      >
+        <Download /> Install app on your phone
+      </Button>
+    </div>
   );
 }

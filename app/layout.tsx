@@ -1,6 +1,6 @@
+import { InstallPrompt } from "@/components/install-prompt";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { InstallPrompt } from "./components/InstallPrompt";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Q&A App",
-  description: "A Q&A application",
+  title: "social thing",
+  description: "a social thing",
   manifest: "/manifest.json",
 };
 

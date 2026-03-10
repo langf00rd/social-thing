@@ -5,7 +5,7 @@ import { ReactNode } from "react";
 import { Button } from "./ui/button";
 
 export default function Header(props: {
-  title: string;
+  title?: string;
   slotRight?: ReactNode;
   showBackButton?: boolean;
 }) {
@@ -21,7 +21,9 @@ export default function Header(props: {
               <ChevronLeft />
             </Button>
           )}
-          <h1 className="font-semibold text-xl">{props.title}</h1>
+          {props.title && (
+            <h1 className="font-semibold text-xl">{props.title}</h1>
+          )}
         </div>
         {props.slotRight}
       </div>

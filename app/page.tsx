@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toPng } from "html-to-image";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import Balancer from "react-wrap-balancer";
 
 export default function Home() {
   const [color, setColor] = useState("#5C5AED");
@@ -20,9 +21,11 @@ export default function Home() {
 
   return (
     <div className="h-screen flex items-center justify-center flex-col gap-6">
-      <h1 className="text-2xl">Ask questions, chat, make friends</h1>
+      <h1 className="text-5xl w-120 leading-14 text-center">
+        <Balancer>Ask questions, chat, make friends</Balancer>
+      </h1>
       <Link href="/posts">
-        <Button>Get started</Button>
+        <Button size="lg">Get started for free</Button>
       </Link>
     </div>
   );
