@@ -1,4 +1,5 @@
 import { InstallPrompt } from "@/components/install-prompt";
+import { OneSignalProvider } from "@/components/onesignal-provider";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -35,6 +36,7 @@ export default function RootLayout({
           {children}
         </div>
         <InstallPrompt />
+        <OneSignalProvider />
       </body>
     </html>
   );

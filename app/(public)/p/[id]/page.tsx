@@ -67,6 +67,18 @@ export default function Page() {
     });
 
     if (!error) {
+      // Send push notification to post owner
+      if (post?.user) {
+        fetch("/api/notifications", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: post.user,
+            postBody: post.body,
+          }),
+        });
+      }
+
       const { data } = await supabase
         .from("replies")
         .select("*")
