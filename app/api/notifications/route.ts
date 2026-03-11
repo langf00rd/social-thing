@@ -7,6 +7,8 @@ export async function POST(request: Request) {
   try {
     const { userId, postBody } = await request.json();
 
+    console.log("userId, postBody", userId, postBody);
+
     const supabase = createClient();
 
     const { data: user } = await supabase
@@ -16,7 +18,10 @@ export async function POST(request: Request) {
       .single();
 
     if (!user?.auth_id || !ONESIGNAL_APP_ID) {
-      return NextResponse.json({ success: false });
+      return NextResponse.json({
+        success: false,
+        reason: "missing auth_id or ONESIGNAL_APP_ID",
+      });
     }
 
     const response = await fetch("https://api.onesignal.com/notifications", {
@@ -46,6 +51,6 @@ export async function POST(request: Request) {
     return NextResponse.json(data);
   } catch (error) {
     console.error("Notification error:", error);
-    return NextResponse.json({ success: false, error });
+    return NextResponse.json({ success: false, reason: error });
   }
 }
