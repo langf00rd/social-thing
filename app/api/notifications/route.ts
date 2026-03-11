@@ -5,11 +5,8 @@ const ONESIGNAL_APP_ID = process.env.NEXT_PUBLIC_ONESIGNAL_APP_ID;
 
 export async function POST(request: Request) {
   try {
-    const { userId, postBody } = await request.json();
-
-    console.log("userId, postBody", userId, postBody);
-
     const supabase = createClient();
+    const { userId, postBody } = await request.json();
 
     const { data: user } = await supabase
       .from("users")
@@ -20,7 +17,7 @@ export async function POST(request: Request) {
     if (!user?.auth_id || !ONESIGNAL_APP_ID) {
       return NextResponse.json({
         success: false,
-        reason: "missing auth_id or ONESIGNAL_APP_ID",
+        reason: "missing config",
       });
     }
 
@@ -28,7 +25,7 @@ export async function POST(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Basic ${process.env.ONESIGNAL_REST_API_KEY}`,
+        Authorization: `Key ${process.env.ONESIGNAL_REST_API_KEY}`,
       },
       body: JSON.stringify({
         app_id: ONESIGNAL_APP_ID,
@@ -46,11 +43,15 @@ export async function POST(request: Request) {
 
     const data = await response.json();
 
-    console.log("data", data);
+    if (data.errors) {
+      return NextResponse.json({ success: false, reason: data.errors });
+    }
+
+    console.log("data ->", data);
 
     return NextResponse.json(data);
   } catch (error) {
-    console.log("Notification error:", error);
+    console.log("notification error:", error);
     return NextResponse.json({ success: false, reason: error });
   }
 }

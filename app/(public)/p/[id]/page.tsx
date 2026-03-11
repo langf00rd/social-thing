@@ -31,7 +31,7 @@ export default function Page() {
       if (postData) {
         const { data: userData } = await supabase
           .from("users")
-          .select("first_name, last_name, photo_url")
+          .select("first_name, last_name, photo_url, id")
           .eq("id", postData.user)
           .single();
 
@@ -39,6 +39,7 @@ export default function Page() {
           ...postData,
           user: userData || null,
         };
+
         setPost(postWithUser);
 
         const { data: repliesData } = await supabase
@@ -73,7 +74,7 @@ export default function Page() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            userId: post.user,
+            userId: post.user.id,
             postBody: post.body,
           }),
         });

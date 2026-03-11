@@ -5,6 +5,7 @@ export interface Post {
   slug: string;
   created_at: string;
   user?: {
+    id?: number;
     first_name: string;
     last_name: string;
     photo_url: string;
