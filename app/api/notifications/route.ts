@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Notification error:", error);
+    console.log("Notification error:", error);
     return NextResponse.json({ success: false, reason: error });
   }
 }
