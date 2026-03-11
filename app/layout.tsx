@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen font-sans`}
       >
-        <div className="px-5 bg-white max-w-225 h-screen mx-auto">
+        <div className="px-5 bg-white max-w-225 min-h-screen mx-auto">
           {children}
         </div>
         <InstallPrompt />

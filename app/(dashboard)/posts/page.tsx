@@ -115,8 +115,8 @@ export default function Page() {
       ) : (
         <div className="grid gap-2 md:gap-4 md:grid-cols-2">
           {posts.map((post) => (
-            <Link key={post.id} href={`/posts/${post.id}`}>
-              <div className="flex-col gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl">
+            <Link key={post.id} href={`/posts/${post.id}`} className="h-full">
+              <div className="flex-col h-full gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl">
                 <p className="text-neutral-600">{post.body}</p>
                 <div className="text-neutral-400 font-mono text-sm flex justify-between">
                   <p>

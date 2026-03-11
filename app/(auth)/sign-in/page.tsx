@@ -25,9 +25,9 @@ export default function Page() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center">
+    <div className="h-screen flex items-center justify-center">
       <div className="flex items-center flex-col gap-8">
-        <h2 className="text-3xl md:text-5xl font-medium max-w-100 md:leading-13 text-center">
+        <h2 className="text-3xl md:text-5xl font-medium max-w-70 md:max-w-100 md:leading-13 text-center">
           <Balancer>Create your free account</Balancer>
         </h2>
         <Button

@@ -13,14 +13,14 @@ export function PostView(props: {
   const { body, setBody, theme, setTheme, cardRef } = props;
   return (
     <div className="space-y-4">
-      <div className="mt-32 w-full flex items-center justify-center">
+      <div className="mt-10 w-full flex items-center justify-center">
         <div
           ref={cardRef}
           style={{ backgroundColor: theme }}
-          className="p-10 max-w-150 h-100 w-full md:p-18 shadow-[0px_0px_512px_#bcbcbc5c]"
+          className="p-10 max-w-150 md:h-100 w-full md:p-18 shadow-[0px_0px_512px_#bcbcbc5c]"
         >
           <div className="shadow-[0_0_20px_0px_#33333363] h-full rounded-2xl overflow-clip">
-            <div className="w-full h-full bg-white flex items-center justify-center">
+            <div className="w-full h-full py-14 bg-white flex items-center justify-center">
               <textarea
                 placeholder="Type here..."
                 value={body}

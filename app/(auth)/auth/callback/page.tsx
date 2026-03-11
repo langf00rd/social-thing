@@ -30,9 +30,11 @@ export default function AuthCallback() {
       const firstName = fullName.split(" ")[0] || "";
       const lastName = fullName.split(" ").slice(1).join(" ") || "";
       const photoUrl = user.user_metadata?.avatar_url || "";
+      const authId = user.id;
 
       const { error: upsertError } = await supabase.from("users").upsert(
         {
+          auth_id: authId,
           email,
           first_name: firstName,
           last_name: lastName,
@@ -58,6 +60,7 @@ export default function AuthCallback() {
           USER_COOKIE,
           JSON.stringify({
             id: userData.id,
+            auth_id: userData.auth_id,
             email: userData.email,
             first_name: userData.first_name,
             last_name: userData.last_name,

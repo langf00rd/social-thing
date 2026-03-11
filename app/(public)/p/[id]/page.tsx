@@ -24,21 +24,22 @@ export default function Page() {
       const supabase = createClient();
       const { data: postData } = await supabase
         .from("posts")
-        .select(
-          `
-          *,
-          user:users (
-            first_name,
-            last_name,
-            photo_url
-          )
-        `,
-        )
+        .select("id, body, theme, slug, created_at, user")
         .eq("id", params.id)
         .single();
 
       if (postData) {
-        setPost(postData);
+        const { data: userData } = await supabase
+          .from("users")
+          .select("first_name, last_name, photo_url")
+          .eq("id", postData.user)
+          .single();
+
+        const postWithUser = {
+          ...postData,
+          user: userData || null,
+        };
+        setPost(postWithUser);
 
         const { data: repliesData } = await supabase
           .from("replies")
@@ -154,7 +155,7 @@ export default function Page() {
 
       <div className="fixed w-screen bottom-0 left-0 flex items-center justify-center">
         <div className="w-full bg-white h-full max-w-lg">
-          <div className="flex p-5 gap-2">
+          <div className="flex p-5 py-2 gap-2">
             <Input
               className="bg-neutral-200/60 rounded-full border-none"
               placeholder="Type message..."

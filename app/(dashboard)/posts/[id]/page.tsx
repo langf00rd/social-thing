@@ -4,6 +4,7 @@ import Header from "@/components/header";
 import { PublicPostView } from "@/components/post-view";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase";
 import { Post, Reply } from "@/lib/types";
@@ -15,9 +16,10 @@ import { useEffect, useRef, useState } from "react";
 export default function Page() {
   useRequireAuth();
 
-  const cardRef = useRef<HTMLDivElement>(null);
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
+  const cardRef = useRef<HTMLDivElement>(null);
   const [post, setPost] = useState<Post | null>(null);
   const [replies, setReplies] = useState<Reply[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +28,8 @@ export default function Page() {
 
   useEffect(() => {
     const fetchPost = async () => {
+      if (!user?.id) return;
+
       const supabase = createClient();
       const { data, error } = await supabase
         .from("posts")
@@ -40,6 +44,7 @@ export default function Page() {
         `,
         )
         .eq("id", params.id)
+        .eq("user", user.id)
         .single();
 
       if (!error && data) {
@@ -56,8 +61,10 @@ export default function Page() {
       setLoading(false);
     };
 
-    if (params.id) fetchPost();
-  }, [params.id]);
+    if (params.id && user?.id) {
+      fetchPost();
+    }
+  }, [params.id, user?.id]);
 
   const handleDelete = async () => {
     if (!post || deleting) return;
@@ -82,7 +89,7 @@ export default function Page() {
     if (!cardRef.current) return;
     const dataUrl = await toPng(cardRef.current, { pixelRatio: 6 });
     const link = document.createElement("a");
-    link.download = "card.png";
+    link.download = `${post?.slug}.png`;
     link.href = dataUrl;
     link.click();
   };
@@ -93,7 +100,7 @@ export default function Page() {
   if (!post) return <Header title="Post not found" showBackButton />;
 
   return (
-    <div className="h-full overflow-y-scroll">
+    <div className="h-full">
       <Header
         title="Post"
         showBackButton

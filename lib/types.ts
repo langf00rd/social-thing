@@ -2,12 +2,13 @@ export interface Post {
   id: number;
   body: string;
   theme: string;
+  slug: string;
   created_at: string;
   user?: {
     first_name: string;
     last_name: string;
     photo_url: string;
-  };
+  } | null;
 }
 
 export interface Reply {

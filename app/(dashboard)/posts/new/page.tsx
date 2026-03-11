@@ -9,7 +9,6 @@ import { TEMPLATE_QUESTIONS } from "@/lib/content";
 import { createClient } from "@/lib/supabase";
 import { Post } from "@/lib/types";
 import { toPng } from "html-to-image";
-import { Download } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import Balancer from "react-wrap-balancer";
@@ -70,7 +69,7 @@ export default function Page() {
   };
 
   return (
-    <div className="relative h-screen">
+    <div className="relative min-h-screen">
       <Header
         showBackButton
         title="New post"
@@ -82,10 +81,6 @@ export default function Page() {
             >
               {publishing ? "Publishing..." : "Publish"}
             </Button>
-            <Button variant="secondary" onClick={handleDownload}>
-              <Download className="text-neutral-400" />
-              Download
-            </Button>
           </div>
         }
       />
@@ -96,7 +91,7 @@ export default function Page() {
         setTheme={setTheme}
         cardRef={cardRef}
       />
-      <div className="w-full py-4 space-y-2 absolute bottom-0">
+      <div className="w-full py-4 space-y-2 mt-10 md:mt-0 md:absolute bottom-0">
         <h2 className="text-sm font-medium text-neutral-600">
           Questions you can ask
         </h2>
