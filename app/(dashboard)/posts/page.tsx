@@ -15,31 +15,34 @@ import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/hooks/use-auth";
 import { useRequireAuth } from "@/lib/auth";
 import { createClient } from "@/lib/supabase";
+import { Post } from "@/lib/types";
 import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type Post = {
-  id: number;
-  body: string;
-  theme: string;
-  created_at: string;
-  reply_count?: number;
-  user: number;
-  user_data?: {
-    first_name: string;
-    last_name: string;
-    photo_url: string;
-    city?: string;
-    country?: string;
-  };
-};
+// type Post = {
+//   id: number;
+//   body: string;
+//   theme: string;
+//   created_at: string;
+//   reply_count?: number;
+//   user: number;
+//   user?: {
+//     first_name: string;
+//     last_name: string;
+//     photo_url: string;
+//     city?: string;
+//     country?: string;
+//     latitude?: number;
+//     longitude?: number;
+//   };
+// };
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
+  const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -53,14 +56,17 @@ export default function Page() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
 
+  console.log('posts', posts)
+
   useEffect(() => {
     const fetchPosts = async () => {
       if (!user?.id) return;
 
       const supabase = createClient();
-      
+
       let nearbyUserIds: number[] = [];
-      
+      const userLocations: Map<number, { lat: number; lng: number }> = new Map();
+
       if (user.latitude && user.longitude) {
         const { data: allUsers } = await supabase
           .from("users")
@@ -69,13 +75,21 @@ export default function Page() {
           .not("latitude", "is", null);
 
         if (allUsers) {
+          allUsers.forEach((u) => {
+            if (u.latitude && u.longitude) {
+              userLocations.set(u.id, { lat: u.latitude, lng: u.longitude });
+            }
+          });
+
           nearbyUserIds = allUsers
             .filter((u) => {
+              const location = userLocations.get(u.id);
+              if (!location) return false;
               const distance = calculateDistance(
                 user.latitude!,
                 user.longitude!,
-                u.latitude!,
-                u.longitude!
+                location.lat,
+                location.lng
               );
               return distance <= 20;
             })
@@ -85,7 +99,7 @@ export default function Page() {
 
       let query = supabase
         .from("posts")
-        .select("*, user:users(id, first_name, last_name, photo_url, city, country)");
+        .select("*, user:users(id, first_name, last_name, photo_url, city, country, latitude, longitude)");
 
       if (nearbyUserIds.length > 0) {
         query = query.in("user", nearbyUserIds);
@@ -120,7 +134,7 @@ export default function Page() {
   return (
     <div>
       <Header
-        title="My posts"
+        title="Posts"
         slotRight={
           <div className="flex gap-2">
             <Link href="/posts/new" className="block">
@@ -149,6 +163,11 @@ export default function Page() {
                 <Button variant="destructive" onClick={signOut}>
                   Sign out
                 </Button>
+                <Link href="/posts/me">
+                  <Button variant='link'>
+                    My posts
+                  </Button>
+                </Link>
               </PopoverContent>
             </Popover>
           </div>
@@ -159,7 +178,7 @@ export default function Page() {
       ) : posts.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-neutral-500 mb-4">
-            You haven&apos;t created any posts yet.
+            No posts at this time
           </p>
           <Link href="/posts/new">
             <Button>Create your first post</Button>
@@ -167,29 +186,50 @@ export default function Page() {
         </div>
       ) : (
         <div className="grid gap-2 md:gap-4 md:grid-cols-2">
-          {posts.map((post) => (
-            <Link key={post.id} href={`/posts/${post.id}`} className="h-full">
-              <div className="flex-col h-full gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl">
-                <p className="text-neutral-600">{post.body}</p>
-                <div className="text-neutral-400 font-mono text-sm flex justify-between">
-                  <p>
-                    {new Date(post.created_at).toLocaleString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                      hour: "numeric",
-                      minute: "2-digit",
-                      hour12: true,
-                    })}
-                  </p>
-                  <p>
-                    {post.reply_count}{" "}
-                    {post.reply_count === 1 ? "reply" : "replies"}
-                  </p>
+          {posts.map((post) => {
+            const distance = user?.latitude && user?.longitude && post.user?.latitude && post.user?.longitude
+              ? calculateDistance(user.latitude, user.longitude, post.user.latitude, post.user.longitude)
+              : null;
+            return (
+              <Link key={post.id} href={`/p/${post.id}`} className="h-full">
+                <div className="flex-col h-full gap-6 border justify-between flex border-neutral-200/60 cursor-pointer md:hover:-rotate-3 transition-transform shadow-[0_0_4px_3px_#f8f8f88f] p-3 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={post.user?.photo_url || ""} />
+                      <AvatarFallback>
+                        {post.user?.first_name?.[0] || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium">{post.user?.first_name}</span>
+                      {distance !== null && (
+                        <span className="text-xs text-neutral-400">
+                          {distance < 1 ? `${Math.round(distance * 1000)}m away` : `${distance.toFixed(1)}km away`}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-neutral-600">{post.body}</p>
+                  <div className="text-neutral-400 font-mono text-sm flex justify-between">
+                    <p>
+                      {new Date(post.created_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })}
+                    </p>
+                    <p>
+                      {(post as unknown as { reply_count: number }).reply_count}{" "}
+                      {(post as unknown as { reply_count: number }).reply_count === 1 ? "reply" : "replies"}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Link>
-          ))}
+              </Link>
+            );
+          })}
         </div>
       )}
     </div>

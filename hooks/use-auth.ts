@@ -4,19 +4,9 @@ import { createClient } from "@/lib/supabase";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
+import { User } from "@/lib/types";
 
-export type User = {
-  id: number;
-  auth_id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  photo_url: string;
-  latitude?: number;
-  longitude?: number;
-  city?: string;
-  country?: string;
-};
+
 
 const USER_COOKIE = "user_data";
 

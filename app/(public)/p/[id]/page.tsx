@@ -4,6 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
+import { getStoredUser } from "@/hooks/use-auth";
 import { createClient } from "@/lib/supabase";
 import { Post, Reply } from "@/lib/types";
 import { ArrowRight } from "lucide-react";
@@ -57,15 +58,22 @@ export default function Page() {
   }, [params.id]);
 
   const handleSendReply = async () => {
-    if (!replyText.trim() || sending) return;
+    if (!replyText.trim() || sending || !post?.id) return;
 
     setSending(true);
     const supabase = createClient();
+    const user = getStoredUser();
 
-    const { error } = await supabase.from("replies").insert({
-      post: post?.id,
+    const replyData: { post: number; body: string; user?: number } = {
+      post: post.id,
       body: replyText,
-    });
+    };
+
+    if (user?.id) {
+      replyData.user = user.id;
+    }
+
+    const { error } = await supabase.from("replies").insert(replyData);
 
     if (!error) {
       // Send push notification to post owner
