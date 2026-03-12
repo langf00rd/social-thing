@@ -25,7 +25,27 @@ type Post = {
   theme: string;
   created_at: string;
   reply_count?: number;
+  user: number;
+  user_data?: {
+    first_name: string;
+    last_name: string;
+    photo_url: string;
+    city?: string;
+    country?: string;
+  };
 };
+
+function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
 
 export default function Page() {
   useRequireAuth();
@@ -38,11 +58,44 @@ export default function Page() {
       if (!user?.id) return;
 
       const supabase = createClient();
-      const { data, error } = await supabase
+      
+      let nearbyUserIds: number[] = [];
+      
+      if (user.latitude && user.longitude) {
+        const { data: allUsers } = await supabase
+          .from("users")
+          .select("id, latitude, longitude, city, country")
+          .neq("id", user.id)
+          .not("latitude", "is", null);
+
+        if (allUsers) {
+          nearbyUserIds = allUsers
+            .filter((u) => {
+              const distance = calculateDistance(
+                user.latitude!,
+                user.longitude!,
+                u.latitude!,
+                u.longitude!
+              );
+              return distance <= 20;
+            })
+            .map((u) => u.id);
+        }
+      }
+
+      let query = supabase
         .from("posts")
-        .select("*")
-        .eq("user", user.id)
-        .order("created_at", { ascending: false });
+        .select("*, user:users(id, first_name, last_name, photo_url, city, country)");
+
+      if (nearbyUserIds.length > 0) {
+        query = query.in("user", nearbyUserIds);
+      } else if (!user.latitude || !user.longitude) {
+        query = query.neq("user", user.id);
+      } else {
+        query = query.eq("id", 0);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (!error && data) {
         const postsWithCounts = await Promise.all(
@@ -62,7 +115,7 @@ export default function Page() {
     if (user?.id) {
       fetchPosts();
     }
-  }, [user?.id]);
+  }, [user?.id, user?.latitude, user?.longitude]);
 
   return (
     <div>

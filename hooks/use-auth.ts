@@ -12,6 +12,10 @@ export type User = {
   first_name: string;
   last_name: string;
   photo_url: string;
+  latitude?: number;
+  longitude?: number;
+  city?: string;
+  country?: string;
 };
 
 const USER_COOKIE = "user_data";
@@ -48,7 +52,7 @@ export function useAuth() {
 
     const { data } = await supabase
       .from("users")
-      .select("*")
+      .select("id, auth_id, email, first_name, last_name, photo_url, latitude, longitude, city, country")
       .eq("email", authUser.email)
       .single();
 
@@ -60,6 +64,10 @@ export function useAuth() {
         first_name: data.first_name,
         last_name: data.last_name,
         photo_url: data.photo_url,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        city: data.city,
+        country: data.country,
       };
       setStoredUser(userData);
       setUser(userData);
