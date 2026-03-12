@@ -51,9 +51,11 @@ export default function AuthCallback() {
 
       const { data: userData } = await supabase
         .from("users")
-        .select("*")
+        .select("id, auth_id, email, first_name, last_name, photo_url, latitude, longitude, city, country")
         .eq("email", email)
         .single();
+
+      const hasLocation = userData?.latitude && userData?.longitude;
 
       if (userData) {
         Cookies.set(
@@ -65,13 +67,17 @@ export default function AuthCallback() {
             first_name: userData.first_name,
             last_name: userData.last_name,
             photo_url: userData.photo_url,
+            latitude: userData.latitude,
+            longitude: userData.longitude,
+            city: userData.city,
+            country: userData.country,
           }),
           { expires: 7 },
         );
       }
 
       setStatus("Success!");
-      router.push("/posts");
+      router.push(hasLocation ? "/posts" : "/location");
     };
 
     handleCallback();
